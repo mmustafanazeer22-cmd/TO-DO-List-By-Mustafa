@@ -1,4 +1,3 @@
-
 var input = document.getElementById('todo');
 var button = document.getElementById('btn');
 
@@ -10,27 +9,24 @@ var editInput = document.getElementById("editInput");
 var saveEdit = document.getElementById("saveEdit");
 var cancelEdit = document.getElementById("cancelEdit");
 
-
 var saved = localStorage.getItem('todos');
 var todos = saved ? JSON.parse(saved) : {};
-
 
 function savetodos() {
     localStorage.setItem('todos', JSON.stringify(todos));
 }
 
 
-
 function createtodonode(todo, id) {
 
     var li = document.createElement('li');
 
-    // Checkbox
+    
     var checkbox = document.createElement('input');
     checkbox.type = "checkbox";
     checkbox.checked = todo.completed;
 
-    // Text
+    
     var textspan = document.createElement("span");
     textspan.textContent = todo.text;
     textspan.style.margin = "0 8px";
@@ -39,28 +35,34 @@ function createtodonode(todo, id) {
         textspan.style.textDecoration = "line-through";
     }
 
-  
+    
     var datespan = document.createElement("small");
-   datespan.textContent = " (" + todo.date + ")";
+    datespan.textContent = " (" + todo.date + ")";
     datespan.style.color = "gray";
 
-   
+
     checkbox.addEventListener("change", () => {
         todo.completed = checkbox.checked;
         savetodos();
         render();
     });
 
-    
     textspan.addEventListener("dblclick", () => {
         editPopup.style.display = "flex";
         editInput.value = todo.text;
 
+       
+        saveEdit.onclick = null;
+
         saveEdit.onclick = () => {
-            todo.text = editInput.value.trim();
+            var newText = editInput.value.trim();
+
+            if (newText === "") return;
+
+            todo.text = newText;
             savetodos();
-            editPopup.style.display = "none";
             render();
+            editPopup.style.display = "none";
         };
 
         cancelEdit.onclick = () => {
@@ -69,24 +71,13 @@ function createtodonode(todo, id) {
     });
 
   
-    var delbtn = document.createElement("button");
-    delbtn.textContent = "Delete";
 
-    delbtn.addEventListener("click", () => {
-        delete todos[id];   
-        savetodos();
-        render();
-    });
-
-    
     li.appendChild(checkbox);
     li.appendChild(textspan);
     li.appendChild(datespan);
-    li.appendChild(delbtn);
 
     return li;
 }
-
 
 
 function render() {
@@ -94,8 +85,9 @@ function render() {
     list.innerHTML = "";
     completedList.innerHTML = "";
 
- 
-    Object.keys(todos).forEach((id) => {
+    Object.keys(todos)
+    .sort((a, b) => new Date(todos[a].date) - new Date(todos[b].date))
+    .forEach((id) => {
 
         var todo = todos[id];
         var node = createtodonode(todo, id);
@@ -105,42 +97,33 @@ function render() {
         } else {
             list.appendChild(node);
         }
-
     });
 }
-
-
 
 function addtodo() {
 
     var text = input.value.trim();
-
     if (text === "") return;
 
     var now = new Date();
     var dateString = now.toLocaleString();
 
     var id = "id" + Date.now();
-    console.log(id)
 
     todos[id] = {
         text: text,
         completed: false,
         date: dateString
     };
-    console.log(id)
 
     input.value = "";
 
     savetodos();
     render();
-        console.log(id)
 }
 
 
-
 button.addEventListener("click", addtodo);
-
 
 input.addEventListener("keydown", (e) => {
     if (e.key === "Enter") {
@@ -148,7 +131,5 @@ input.addEventListener("keydown", (e) => {
     }
 });
 
-
-
 render();
-
+      
